@@ -127,10 +127,39 @@ class player(object):
         self.height = height
         self.left = False
         self.right = False
+        self.down = False
+        self.up = False
+        self.standing = True
+
         self.vel = 20
+        self.walkCount = 0
 
     def draw(self, win):
-        win.blit(king_up[0], (self.x, self.y))
+        if self.walkCount >= 3:
+            self.walkCount = 0
+        if not(self.standing):
+            if self.left:
+                win.blit(king_left[self.walkCount], (self.x, self.y))
+                self.walkCount +=1
+            elif self.right:
+                win.blit(king_right[self.walkCount], (self.x, self.y))
+                self.walkCount +=1
+            elif self.up:
+                win.blit(king_up[self.walkCount], (self.x, self.y))
+                self.walkCount +=1
+            elif self.down:
+                win.blit(king_down[self.walkCount], (self.x, self.y))
+                self.walkCount +=1
+
+        else:
+            if self.left:
+                win.blit(king_left[0], (self.x, self.y))
+            elif self.right:
+                win.blit(king_right[0], (self.x, self.y))
+            elif self.up:
+                win.blit(king_up[0], (self.x, self.y))
+            elif self.down:
+                win.blit(king_down[0], (self.x, self.y))
 
 
 
@@ -159,16 +188,36 @@ while run:
         character.x -= character.vel
         character.left = True
         character.right = False
+        character.up = False
+        character.down = False
+        character.standing = False
 
     elif keys[pygame.K_RIGHT]:
         character.x += character.vel
         character.right = True
         character.left = False
+        character.up = False
+        character.down = False
+        character.standing = False
+
     elif keys[pygame.K_DOWN]:
         character.y += character.vel
+        character.right = False
+        character.left = False
+        character.up = False
+        character.down = True
+        character.standing = False
 
     elif keys[pygame.K_UP]:
         character.y -= character.vel
+        character.right = False
+        character.left = False
+        character.up = True
+        character.down = False
+        character.standing = False
+    else:
+        character.standing = True
+        character.walkCount = 0
 
 
 
