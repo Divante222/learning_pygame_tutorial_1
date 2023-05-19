@@ -8,7 +8,8 @@ clock = pygame.time.Clock()
 
 
 
-bg = pygame.image.load('bg.png')
+bg = pygame.image.load('bg2.png')
+bg = pygame.transform.scale(bg, (550, 250))
 
 bg_width = bg.get_width()
 bg_height = bg.get_height() 
@@ -130,11 +131,15 @@ class player(object):
         self.down = False
         self.up = False
         self.standing = True
+        self.fire = False
+        self.hitbox = (self.x + 20, self.y, 28, 60)
+
 
         self.vel = 20
         self.walkCount = 0
 
     def draw(self, win):
+        win.blit(king_right[0], (self.x, self.y))
         if self.walkCount >= 3:
             self.walkCount = 0
         if not(self.standing):
@@ -160,22 +165,108 @@ class player(object):
                 win.blit(king_up[0], (self.x, self.y))
             elif self.down:
                 win.blit(king_down[0], (self.x, self.y))
+        self.hitbox = (self.x + 18, self.y + 20, 40, 85)
+        pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+
+class animation_firefireball(object):
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.fire = False
+        self.vel = 5
+        self.walkcount = 0
+
+
+    def fireball(self, win):
+        fireball_list = [pygame.image.load('fireball_1.png'),
+                         pygame.image.load('fireball_1.png'),
+                         pygame.image.load('fireball_1.png'),
+                         pygame.image.load('fireball_2.png'),
+                         pygame.image.load('fireball_2.png'),
+                         pygame.image.load('fireball_2.png')]
+        if self.walkcount >=6:
+            self.walkcount = 0
+        if self.fire == True:
+            win.blit(fireball_list[self.walkcount], (self.x + 20, self.y))
+            self.walkcount +=1
+            self.x += self.vel
 
 
 
-character = player(20, 100, 64, 64)
 
-def redrawGameWindow():
+class slime(object):
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y 
+        self.width = width
+        self.height = height
+        self.vel = 0
+        self.alive = True
+        self.walkcount = 0
+        self.hitbox = (self.x + 20, self.y, 28, 60)
+        
+        
+    
+
+    def draw(self, win):
+        slime_list = [
+        pygame.image.load('slime_movement_1.png').convert_alpha(),
+        pygame.image.load('slime_movement_1.png').convert_alpha(),
+        pygame.image.load('slime_movement_1.png').convert_alpha(),
+        pygame.image.load('slime_movement_2.png').convert_alpha(),
+        pygame.image.load('slime_movement_2.png').convert_alpha(),
+        pygame.image.load('slime_movement_2.png').convert_alpha()
+        ]
+        the_slime = pygame.transform.scale(slime_list[0], (128, 128))
+        if self.walkcount >=6:
+            self.walkcount = 0
+
+        if self.alive == True:
+            the_slime = pygame.transform.scale(slime_list[self.walkcount], (128, 128))
+            win.blit(the_slime, (self.x, self.y))
+            if self.walkcount == 3:
+                self.vel += 8
+            else: 
+                self.vel = 0
+            self.x -= self.vel
+            self.walkcount += 1
+
+            
+
+            if self.x < 600:
+                self.alive = False
+
+        else:
+            self.alive = False
+        self.hitbox = (self.x+30, self.y +40, 80, 40)
+        pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+            
+
+        
+
+character = player(20, 130, 64, 64)
+enemy = slime(1000, 140, 64, 64)
+
+
+
+def redrawGameWindow(animation):
     count = 1
+    
     for i in range(0, tiles):
         win.blit(bg, (i * bg_width ,0))
         count +=1
 
     character.draw(win)
+    enemy.draw(win)
+    if animation == True:
+        fire_attack.fireball(win)
+    
 
     pygame.display.update()
 
-
+animation = False
 run = True
 while run:
     for event in pygame.event.get():
@@ -184,6 +275,8 @@ while run:
     keys = pygame.key.get_pressed()
 
     clock.tick(27)
+    
+
     if keys[pygame.K_LEFT]:
         character.x -= character.vel
         character.left = True
@@ -215,10 +308,17 @@ while run:
         character.up = True
         character.down = False
         character.standing = False
+
+
+    elif keys[pygame.K_SPACE]:
+        animation = True
+        fire_attack = animation_firefireball(character.x + 10, character.y + 40, 64,64)
+        fire_attack.fire = True
+          
     else:
         character.standing = True
         character.walkCount = 0
 
 
 
-    redrawGameWindow()
+    redrawGameWindow(animation)
