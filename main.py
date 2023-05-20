@@ -1,5 +1,6 @@
 import pygame
 import math
+from pygame.locals import *
 
 pygame.init()
 win = pygame.display.set_mode((1100,250))
@@ -8,7 +9,7 @@ clock = pygame.time.Clock()
 
 
 
-bg = pygame.image.load('bg2.png')
+bg = pygame.image.load('bg_3.png')
 bg = pygame.transform.scale(bg, (550, 250))
 
 bg_width = bg.get_width()
@@ -177,9 +178,31 @@ class animation_firefireball(object):
         self.fire = False
         self.vel = 5
         self.walkcount = 0
-
+        self.burncount = 0
+        self.stop_burn = True
+        self.hitbox = pygame.Rect(self.x + 25, self.y + 19, 32, 21)
 
     def fireball(self, win):
+        clear_enemy = pygame.image.load('clear_enemy.png')
+        slime_death = [pygame.image.load('slime_fireball_1.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_1.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_1.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_1.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_1.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_1.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_2.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_2.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_2.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_2.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_2.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_2.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_3.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_3.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_3.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_3.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_3.png').convert_alpha(),
+                       pygame.image.load('slime_fireball_3.png').convert_alpha(),
+                       ]
         fireball_list = [pygame.image.load('fireball_1.png'),
                          pygame.image.load('fireball_1.png'),
                          pygame.image.load('fireball_1.png'),
@@ -192,6 +215,32 @@ class animation_firefireball(object):
             win.blit(fireball_list[self.walkcount], (self.x + 20, self.y))
             self.walkcount +=1
             self.x += self.vel
+            self.hitbox = pygame.Rect(self.x + 25, self.y + 19, 32, 21)
+            pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+        if len(enemy_list) > 0:
+            if self.stop_burn:    
+                if pygame.Rect.colliderect(fire_attack.hitbox, enemy_list[0].hitbox):
+                    slime_dead = pygame.transform.scale(slime_death[self.burncount], (128, 128))
+                
+                    win.blit(slime_dead, (enemy_list[0].x, enemy_list[0].y))
+                    self.burncount +=1
+                    enemy_list[0].alive = False
+                    self.fire = False
+                    if self.burncount >=18:
+                        self.stop_burn = False
+                        
+                        enemy_list[0].hitbox = (0,0,0,0)
+                        enemy_list.pop()
+                    
+                    
+
+                    
+                    
+                    
+            
+                
+                    
+        
 
 
 
@@ -205,7 +254,8 @@ class slime(object):
         self.vel = 0
         self.alive = True
         self.walkcount = 0
-        self.hitbox = (self.x + 20, self.y, 28, 60)
+        self.hitbox = pygame.Rect(self.x+30, self.y +40, 80, 40)
+        
         
         
     
@@ -232,16 +282,17 @@ class slime(object):
                 self.vel = 0
             self.x -= self.vel
             self.walkcount += 1
-
-            
-
-            if self.x < 600:
-                self.alive = False
-
         else:
             self.alive = False
-        self.hitbox = (self.x+30, self.y +40, 80, 40)
-        pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+
+        if self.alive:
+            self.hitbox = pygame.Rect(self.x+30, self.y +40, 80, 40)
+        
+            
+            pygame.draw.rect(win, (255,0,0), self.hitbox, 2)
+        
+            
+
             
 
         
@@ -259,7 +310,8 @@ def redrawGameWindow(animation):
         count +=1
 
     character.draw(win)
-    enemy.draw(win)
+    if len(enemy_list) > 0:
+        enemy_list[0].draw(win)
     if animation == True:
         fire_attack.fireball(win)
     
@@ -268,6 +320,7 @@ def redrawGameWindow(animation):
 
 animation = False
 run = True
+enemy_list = []
 while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -314,7 +367,15 @@ while run:
         animation = True
         fire_attack = animation_firefireball(character.x + 10, character.y + 40, 64,64)
         fire_attack.fire = True
-          
+    elif keys[pygame.K_TAB]:
+        print(len(enemy_list))
+        enemy = slime(1000, 140, 64, 64)
+        if len(enemy_list) < 2:
+            enemy_list.append(enemy)
+        elif len(enemy_list) >= 2:
+            enemy = slime(1000, 140, 64, 64)
+            enemy_list = [enemy]    
+               
     else:
         character.standing = True
         character.walkCount = 0
