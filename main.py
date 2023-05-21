@@ -3,18 +3,18 @@ import math
 from pygame.locals import *
 
 pygame.init()
-win = pygame.display.set_mode((1100,250))
+win = pygame.display.set_mode((1100,450))
 pygame.display.set_caption('first game')
 clock = pygame.time.Clock()
 
 
 
-bg = pygame.image.load('bg_3.png')
-bg = pygame.transform.scale(bg, (550, 250))
+# bg = pygame.image.load('bg_3.png')
+# bg = pygame.transform.scale(bg, (550, 250))
 
-bg_width = bg.get_width()
-bg_height = bg.get_height() 
-tiles = math.ceil(1000 / bg_width)
+# bg_width = bg.get_width()
+# bg_height = bg.get_height() 
+# tiles = math.ceil(1000 / bg_width)
 black = (0,0,0)
 
 scroll = 0
@@ -134,6 +134,8 @@ class player(object):
         self.standing = True
         self.fire = False
         self.hitbox = (self.x + 20, self.y, 28, 60)
+        self.vel_y = 0
+        self.gravity = 1
 
 
         self.vel = 20
@@ -297,26 +299,59 @@ class slime(object):
 
         
 
-character = player(20, 130, 64, 64)
-enemy = slime(1000, 140, 64, 64)
+character = player(40, 290, 64, 64)
+enemy = slime(1000, 290, 64, 64)
 
 
+bg_images = []
+for i in range (1,3):
+    bg_image = pygame.image.load(f'bg_3_{i}.png')
+    bg_image = pygame.transform.scale(bg_image, (1100, 350))
+    bg_images.append(bg_image)
+bg_width = bg_images[0].get_width()
 
-def redrawGameWindow(animation):
-    count = 1
-    
-    for i in range(0, tiles):
-        win.blit(bg, (i * bg_width ,0))
-        count +=1
+scroll = 0
+base_ground = pygame.image.load('bg_3_base_ground.png')
+base_ground = pygame.transform.scale(base_ground, (1100,450))
 
+base_sky = pygame.image.load('bg_3_base_sky.png')
+base_sky = pygame.transform.scale(base_sky, (1100, 450))
+
+def draw_bg():
+    speed = 1
+    win.blit(base_sky, (0,0))
+    for x in range(5):
+        for i in bg_images:
+            win.blit(i, ((x * bg_width) - scroll * speed,0))
+            speed +=.2
+
+    win.blit(base_ground, (0,0))
     character.draw(win)
     if len(enemy_list) > 0:
         enemy_list[0].draw(win)
     if animation == True:
         fire_attack.fireball(win)
     
-
+    
+        
     pygame.display.update()
+
+
+# def redrawGameWindow(animation):
+#     count = 1
+    
+#     for i in range(0, tiles):
+#         win.blit(bg, (i * bg_width ,0))
+#         count +=1
+
+#     character.draw(win)
+#     if len(enemy_list) > 0:
+#         enemy_list[0].draw(win)
+#     if animation == True:
+#         fire_attack.fireball(win)
+    
+
+#     pygame.display.update()
 
 animation = False
 run = True
@@ -330,7 +365,8 @@ while run:
     clock.tick(27)
     
 
-    if keys[pygame.K_LEFT]:
+    if keys[pygame.K_LEFT] and scroll > 0:
+        scroll -= 5
         character.x -= character.vel
         character.left = True
         character.right = False
@@ -338,7 +374,8 @@ while run:
         character.down = False
         character.standing = False
 
-    elif keys[pygame.K_RIGHT]:
+    elif keys[pygame.K_RIGHT] and scroll < 3000:
+        scroll += 5
         character.x += character.vel
         character.right = True
         character.left = False
@@ -369,11 +406,11 @@ while run:
         fire_attack.fire = True
     elif keys[pygame.K_TAB]:
         print(len(enemy_list))
-        enemy = slime(1000, 140, 64, 64)
+        enemy = slime(1000, 300, 64, 64)
         if len(enemy_list) < 2:
             enemy_list.append(enemy)
         elif len(enemy_list) >= 2:
-            enemy = slime(1000, 140, 64, 64)
+            enemy = slime(1000, 300, 64, 64)
             enemy_list = [enemy]    
                
     else:
@@ -381,5 +418,5 @@ while run:
         character.walkCount = 0
 
 
-
-    redrawGameWindow(animation)
+    draw_bg()
+    # redrawGameWindow(animation)
